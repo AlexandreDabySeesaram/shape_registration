@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import dolfin_mech as dmech
 from shape_derivatives import *
 
-#%% Synthetic image generation
 
 img_raw = plt.imread("lung_blurred.pgm")
 img = np.array(img_raw)
@@ -18,20 +17,20 @@ img = -1*img+50
 (Nx, Ny) = img.shape
 mesh = UnitSquareMesh(Nx, Ny, "crossed")
 
-class FE_image_self(UserExpression):
-    def __init__(self,image_name, image_ext,**kwargs):
-        super().__init__(**kwargs)
-        self.img = plt.imread(image_name+"."+image_ext)
-        (self.Nx, self.Ny) = self.img.shape
-        self.mesh = UnitSquareMesh(self.Nx, self.Ny, "crossed")
+# class FE_image_self(UserExpression):
+#     def __init__(self,image_name, image_ext,**kwargs):
+#         super().__init__(**kwargs)
+#         self.img = plt.imread(image_name+"."+image_ext)
+#         (self.Nx, self.Ny) = self.img.shape
+#         self.mesh = UnitSquareMesh(self.Nx, self.Ny, "crossed")
 
-    def eval_cell(self, value, x, ufc_cell):
-        p = Cell(self.mesh, ufc_cell.index).midpoint()
-        i, j = int(p[0]*(self.Nx-1)), int(p[1]*(self.Ny-1))
-        value[:] = self.img[-(j+1), i]
+#     def eval_cell(self, value, x, ufc_cell):
+#         p = Cell(self.mesh, ufc_cell.index).midpoint()
+#         i, j = int(p[0]*(self.Nx-1)), int(p[1]*(self.Ny-1))
+#         value[:] = self.img[-(j+1), i]
 
-    def value_shape(self):
-        return ()
+#     def value_shape(self):
+#         return ()
 
 class FE_image_self(UserExpression):
 
@@ -43,18 +42,17 @@ class FE_image_self(UserExpression):
     def value_shape(self):
         return ()
 
-y = FE_image_self()
+img_expr = FE_image_self()
 
 # img = FE_image(
 #     image_name="lung", 
 #     image_ext="pgm"
 # )
 
-# Create the scalar function space for the image field
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # Create an instance of the FE_image and interpolate onto V
-image = interpolate(y, V)
+image = interpolate(img_expr, V)
 
 
 image.set_allow_extrapolation(True)
@@ -74,17 +72,15 @@ dmech.write_VTU_file(
 
 #%%
 
-square_size = 1.0  # Length of the sides of the square
-circle_center = (0.5, 0.5)  # Center of the circle
-circle_radius = 0.25  # Radius of the circle
+square_size = 1.0                                               # Length of the sides of the square
+circle_center = (0.5, 0.5)                                      # Center of the circle
+circle_radius = 0.25                                            # Radius of the circle
 
-# mesh_omega = UnitSquareMesh(100, 100)
 
-# Create a disc mesh
 from mshr import *
-center = Point(circle_center[0], circle_center[1])  # Center of the disc
-radius = 1.4*circle_radius         # Radius of the disc
-resolution = 50                   # Resolution of the mesh
+center = Point(circle_center[0], circle_center[1])              # Center of the disc
+radius = 1.4*circle_radius                                      # Radius of the disc
+resolution = 50                                                 # Resolution of the mesh
 domain = Circle(center, radius)
 mesh_omega = generate_mesh(domain, resolution)
 
@@ -106,14 +102,14 @@ dmech.write_VTU_file(
 
 
 # Algorithms parameters
-maxit = 500           # max number of iteration
-step = 0.5            # initial step size
-coeffStep = 1.5       # step increase factor at each iteration ( > 1)
-minStep = 1e-9        # minimum step size (stop criterion)
+maxit = 500                                                     # max number of iteration
+step = 0.5                                                      # initial step size
+coeffStep = 1.5                                                 # step increase factor at each iteration ( > 1)
+minStep = 1e-9                                                  # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha = 1            # dissipation term
-gamma = 1            # preserve mesh quality (arrondis aussi les angles...)
+alpha = 1                                                       # dissipation term
+gamma = 1                                                       # preserve mesh quality (arrondis aussi les angles...)
 
 # Initialization
 
