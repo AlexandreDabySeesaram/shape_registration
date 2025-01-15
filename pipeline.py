@@ -103,7 +103,7 @@ dmech.write_VTU_file(
 
 # Algorithms parameters
 maxit = 500                                                     # max number of iteration
-step = 0.5                                                      # initial step size
+step = 0.1                                                      # initial step size
 coeffStep = 1.5                                                 # step increase factor at each iteration ( > 1)
 minStep = 1e-9                                                  # minimum step size (stop criterion)
 
@@ -153,7 +153,7 @@ while k<maxit and step >= minStep:
     #     time = k,
     #     preserve_connectivity = True)
     dmech.write_VTU_file(
-    filebasename = "mapping_lung_2D",
+    filebasename = "mapping_lung_2D_new",
     function = u_Omega_0,
     time = k,
     preserve_connectivity = True)
