@@ -92,21 +92,10 @@ if dwarp_reader:
         element=fe)
     Img_3D_expr.init_image(
         filename=image_path)
-    # Img_3D_expr = Img_3D_expr - dolfin.Constant(1.0)          # So img is loaded in uint 8 and then create negative and positive values in dolfin
 
-    # dV = dolfin.Measure(
-    #         "dx",
-    #         domain=mesh_omega)
-    # dolfin.assemble(Img_3D_expr * dV)
 
 
 #%% Tracking
-
-
-
-# integral_value = int_I(mesh_omega, image)
-
-# print(f"Integral of f over the domain: {integral_value}")
 
 
 
@@ -139,9 +128,9 @@ gamma = 1            # preserve mesh quality (arrondis aussi les angles...)
 
 # Initialization
 
-mesh_Omega_0 = Mesh(mesh_omega)
-u_fs_Omega_0 = VectorFunctionSpace(mesh_Omega_0, "CG", 1)
-u_Omega_0 = Function(u_fs_Omega_0, name="mapping")
+# mesh_Omega_0 = Mesh(mesh_omega)
+# u_fs_Omega_0 = VectorFunctionSpace(mesh_Omega_0, "CG", 1)
+# u_Omega_0 = Function(u_fs_Omega_0, name="mapping")
 
 
 u_fs = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)
@@ -185,19 +174,13 @@ while k<maxit and step >= minStep:
     k += 1
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(mesh_omega, u, I_3D(mesh_omega, Img_3D_expr), grad_I_3D(mesh_omega, Img_3D_expr), alpha = alpha, gamma = gamma)
-    u, loss , step = update_GD_3D(mesh_omega, mesh_Omega_0, Img_3D_expr, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
-    # mesh_omega = Mesh(mesh_Omega_0)
-    # ALE.move(mesh_omega, u)
+    u, loss , step = update_GD_3D(mesh_omega, Img_3D_expr, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
+
     u_Omega_0.vector()[:] = u.vector()[:]
     # Print and store result
     print(f"it = {k}  |  loss = {loss:.10e}    ", end = "\r")
     loss_vect.append(loss)
 
-    # dmech.write_VTU_file(
-    #     filebasename = "omega_sol",
-    #     function = I(mesh_omega, image),
-    #     time = k,
-    #     preserve_connectivity = True)
     dmech.write_VTU_file(
     filebasename = "mapping_lung_3D",
     function = u_Omega_0,

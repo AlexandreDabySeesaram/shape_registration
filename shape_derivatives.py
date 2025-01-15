@@ -75,7 +75,7 @@ def check_flipped_triangles(mesh):
     return negative_count>0
 
 
-def update_GD(mesh, mesh_0, image, u, descentDir, step=1, minStep=1e-6):
+def update_GD(mesh, image, u, descentDir, step=1, minStep=1e-6):
     
     V = dolfin.VectorFunctionSpace(mesh, "CG", 1)
     
@@ -119,7 +119,7 @@ def update_GD(mesh, mesh_0, image, u, descentDir, step=1, minStep=1e-6):
     return new_u, new_int_I, step
 
 
-def update_GD_3D(mesh, mesh_0, image, u, descentDir, step=1, minStep=1e-6):
+def update_GD_3D(mesh, image, u, descentDir, step=1, minStep=1e-6):
     
     V = dolfin.VectorFunctionSpace(mesh, "CG", 1)
     

@@ -77,10 +77,6 @@ gamma = 1                                                       # preserve mesh 
 
 # Initialization
 
-mesh_Omega_0    = dolfin.Mesh(mesh_omega)
-u_fs_Omega_0    = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)
-u_Omega_0       = dolfin.Function(u_fs_Omega_0, name="mapping")
-
 
 u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)
 u               = dolfin.Function(u_fs, name="mapping")
@@ -99,7 +95,7 @@ filebasename = "mapping_lung_2D_H1_weight_L2_2"
 
 dmech.write_VTU_file(
 filebasename = filebasename,
-function = u_Omega_0,
+function = u,
 time = k,
 preserve_connectivity = True)
 
@@ -107,14 +103,13 @@ while k<maxit and step >= minStep:
     k += 1
     # shape derivative computation and update gradient
     shape_gradient = shape_derivative_volume(mesh_omega, u, I(mesh_omega, image), grad_I(mesh_omega, image), alpha = alpha, gamma = gamma)
-    u, loss , step = update_GD(mesh_omega, mesh_Omega_0, image, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
-    u_Omega_0.vector()[:] = u.vector()[:]
+    u, loss , step = update_GD(mesh_omega, image, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
     # Print and store result
     print(f"it = {k}  |  loss = {loss:.10e}    ", end = "\r")
     loss_vect.append(loss)
     dmech.write_VTU_file(
     filebasename = filebasename,
-    function = u_Omega_0,
+    function = u,
     time = k,
     preserve_connectivity = True)
 # %%

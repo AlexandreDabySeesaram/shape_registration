@@ -61,8 +61,8 @@ def sign_masking_binary_INT(input_name, suffix = "signed", field_name = "pixel i
 
     # Apply the value adjustments
     scalar_array[(scalar_array == 200)] = 0
-    scalar_array[(scalar_array == 0)] = 1
-    scalar_array[(scalar_array == 100)] = -1
+    scalar_array[(scalar_array == 0)] = 50
+    scalar_array[(scalar_array == 100)] = -50
     scalar_array = scalar_array.astype(np.int8)
 
 
@@ -99,8 +99,8 @@ def sign_masking_binary_DOUBLE(input_name, suffix = "signed", field_name = "pixe
 
     # Apply the value adjustments
     scalar_array[(scalar_array == 200)] = 0
-    scalar_array[(scalar_array == 0)] = 1
-    scalar_array[(scalar_array == 100)] = -1
+    scalar_array[(scalar_array == 0)] = 50
+    scalar_array[(scalar_array == 100)] = -50
     scalar_array = scalar_array.astype(np.float64)
 
 
