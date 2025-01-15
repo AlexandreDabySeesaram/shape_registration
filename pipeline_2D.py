@@ -16,7 +16,7 @@ img[img>150] = 0                                                                
 img = -1*img+50                                                                                 # Set inside lung negative and outside positive
 
 (Nx, Ny) = img.shape
-mesh = UnitSquareMesh(Nx, Ny, "crossed")                                                        # Create a mesh at the image dimensions
+mesh = dolfin.UnitSquareMesh(Nx, Ny, "crossed")                                                        # Create a mesh at the image dimensions
 
 
 class FE_image_self(dolfin.UserExpression):
@@ -32,7 +32,7 @@ img_expr = FE_image_self()                                                      
 
 V = dolfin.FunctionSpace(mesh, "Lagrange", 1)
 
-image = interpolate(img_expr, V)                                                                # Project it onto the image mesh
+image = dolfin.interpolate(img_expr, V)                                                                # Project it onto the image mesh
 
 
 image.set_allow_extrapolation(True)                                                             
@@ -60,7 +60,7 @@ integral_value = int_I(mesh_omega, image)
 
 print(f"Integral of f over the domain: {integral_value}")
 
-plot(I(mesh_omega, image))                                      # Plot image projected onto the initial domain
+# plot(I(mesh_omega, image))                                      # Plot image projected onto the initial domain
 
 
 # %% Naive gradient descent
@@ -94,7 +94,7 @@ loss_vect = [int_I(mesh_omega, image)]
 k = 0
 
 
-filebasename = "mapping_lung_2D_H1_weight_L2"
+filebasename = "mapping_lung_2D_H1_weight_L2_2"
 
 
 dmech.write_VTU_file(
