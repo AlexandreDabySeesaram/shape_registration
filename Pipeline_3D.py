@@ -123,7 +123,7 @@ coeffStep = 1.5       # step increase factor at each iteration ( > 1)
 minStep = 1e-9        # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha = 1            # dissipation term
+alpha = 1e-3            # dissipation term
 gamma = 1            # preserve mesh quality (arrondis aussi les angles...)
 
 # Initialization
@@ -166,7 +166,7 @@ k = 0
 
 dmech.write_VTU_file(
 filebasename = "mapping_lung_3D",
-function = u_Omega_0,
+function = u,
 time = k,
 preserve_connectivity = True)
 
@@ -175,15 +175,13 @@ while k<maxit and step >= minStep:
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(mesh_omega, u, I_3D(mesh_omega, Img_3D_expr), grad_I_3D(mesh_omega, Img_3D_expr), alpha = alpha, gamma = gamma)
     u, loss , step = update_GD_3D(mesh_omega, Img_3D_expr, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
-
-    u_Omega_0.vector()[:] = u.vector()[:]
     # Print and store result
     print(f"it = {k}  |  loss = {loss:.10e}    ", end = "\r")
     loss_vect.append(loss)
 
     dmech.write_VTU_file(
     filebasename = "mapping_lung_3D",
-    function = u_Omega_0,
+    function = u,
     time = k,
     preserve_connectivity = True)
 
