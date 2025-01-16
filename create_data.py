@@ -3,7 +3,7 @@ import numpy as np
 from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 
 
-def sign_masking_binary_UINT(
+def sign_masking_binary(
     input_name          : str   = None              , 
     suffix              : str   = "signed"          , 
     field_name          : str   = "pixel intensity" ,
