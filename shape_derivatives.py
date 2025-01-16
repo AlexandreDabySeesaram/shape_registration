@@ -44,7 +44,7 @@ def int_I_3D(mesh, image_expression):
 
 
 
-def shape_derivative_volume(mesh, u_current, I, grad_I, alpha=1, gamma=10):
+def shape_derivative_volume(mesh, u_current, I, grad_I, alpha=1):
     V = dolfin.VectorFunctionSpace(mesh, "CG", 1)
     
     u, v = dolfin.TestFunction(V), dolfin.TrialFunction(V)    
