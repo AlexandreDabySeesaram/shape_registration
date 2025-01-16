@@ -59,7 +59,7 @@ image.set_allow_extrapolation(True)
 
 
 dmech.write_VTU_file(
-    filebasename = "image_lung",
+    filebasename = image_folder+"image_lung_2D",
     function = image,
     time = 0,
     preserve_connectivity = True)
