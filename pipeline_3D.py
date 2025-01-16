@@ -26,9 +26,9 @@ mesh_omega.num_vertices()
 #%% Load image
 
 image_basename  = "PA5_Binary"
-image_suffix    = "signed_int_3"
+image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"mapping_lung_3D_4"
+filebasename    = result_folder+"mapping_lung_3D"
 # image_name      = "PA5_Binary_signed_int.vti" 
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
