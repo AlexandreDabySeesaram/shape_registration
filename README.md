@@ -22,6 +22,7 @@ conda activate shape_registration
 git clone git@gitlab.inria.fr:mgenet/dolfin_warp.git
 cd dolfin_warp
 pip install -e .
+git checkout devel-Alexan…BlurTracking
 ``````
 
 ### Default folder set-up
