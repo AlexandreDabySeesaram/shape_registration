@@ -41,12 +41,12 @@ if not image_file:
     create_data.sign_masking_binary(
         input_name          = image_folder+image_basename   , 
         suffix              = image_suffix                  , 
-        scalar2zero         = 200               ,
-        scalar_background   = 0                 ,                                           # Initial background pixel intensity
-        scalar_foreground   = 100               ,                                           # Initial foreground pixel intensity
-        target_value_bg     = 1                ,                                           # target background pixel intensity
-        target_value_fg     = -1               ,                                           # target foreground pixel intensity
-        target_type         = "signed_char"     ,                                           # unsigned_char, signed_char, float
+        scalar2zero         = 200                           ,
+        scalar_background   = 0                             ,                               # Initial background pixel intensity
+        scalar_foreground   = 100                           ,                               # Initial foreground pixel intensity
+        target_value_bg     = 1                             ,                               # target background pixel intensity
+        target_value_fg     = -1                            ,                               # target foreground pixel intensity
+        target_type         = "signed_char"                 ,                               # unsigned_char, signed_char, float
         )
 
 
@@ -73,26 +73,26 @@ Img_3D_expr.init_image(
 
 
 # Solver parameters
-maxit           = 500                                                                   # max number of iteration
-step            = 0.01                                                                  # initial step size
-coeffStep       = 1.5                                                                   # step increase factor at each iteration ( > 1)
-minStep         = 1e-9                                                                  # minimum step size (stop criterion)
+maxit           = 500                                                                       # max number of iteration
+step            = 0.01                                                                      # initial step size
+coeffStep       = 1.5                                                                       # step increase factor at each iteration ( > 1)
+minStep         = 1e-9                                                                      # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha           = 1e-3                                                                  # weight L1 term of H1 norm
+alpha           = 1e-3                                                                      # weight L1 term of H1 norm
 
 
 # Initialization
 
-mesh_Omega_0    = dolfin.Mesh(mesh_omega)                                               # Reference configuration mesh
-u_fs_Omega_0    = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)                     # d-D vector space defined on reference configuration  
-u_Omega_0       = dolfin.Function(u_fs_Omega_0, name="mapping")                         # Mapping defined on the reference configuration mesh
+mesh_Omega_0    = dolfin.Mesh(mesh_omega)                                                   # Reference configuration mesh
+u_fs_Omega_0    = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)                         # d-D vector space defined on reference configuration  
+u_Omega_0       = dolfin.Function(u_fs_Omega_0, name="mapping")                             # Mapping defined on the reference configuration mesh
 
 
-u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                       # d-D vector space defined on current configuration                             
-u               = dolfin.Function(u_fs, name="mapping")                                 # Mapping defined on the current configuration mesh
+u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                           # d-D vector space defined on current configuration                             
+u               = dolfin.Function(u_fs, name="mapping")                                     # Mapping defined on the current configuration mesh
 
-loss_vect       = [int_I(mesh_omega, Img_3D_expr)]                                      # Store the evolution of the loss function
+loss_vect       = [int_I(mesh_omega, Img_3D_expr)]                                          # Store the evolution of the loss function
 
 # Optimization loop ( naive gradient descent)
 
