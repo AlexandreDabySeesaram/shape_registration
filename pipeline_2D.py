@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import dolfin_mech as dmech
 from shape_derivatives import *
 
-
-
 #%% Domain omega generation
 
 circle_center = (0.5, 0.5)                                                                  # Center of the circle

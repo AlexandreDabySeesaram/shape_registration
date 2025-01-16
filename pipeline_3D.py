@@ -6,6 +6,8 @@ import dolfin_warp as dwarp
 import mshr
 import dolfin_mech as dmech
 from shape_derivatives import *
+import create_data
+import glob
 
 
 #%% Domain omega generation
@@ -23,11 +25,30 @@ mesh_omega.num_vertices()
 
 #%% Load image
 
+image_basename  = "PA5_Binary"
+image_suffix    = "signed_int_3"
 result_folder   = "Results/" 
-filebasename    = result_folder+"mapping_lung_3D_2"
-image_name      = "PA5_Binary_signed_int.vti" 
+filebasename    = result_folder+"mapping_lung_3D_4"
+# image_name      = "PA5_Binary_signed_int.vti" 
+image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
+
+# Check if signed image exist
+image_file = glob.glob(image_path)
+
+if not image_file:
+    create_data.sign_masking_binary(
+        input_name          = image_folder+image_basename   , 
+        suffix              = image_suffix                  , 
+        scalar2zero         = 200               ,
+        scalar_background   = 0                 ,                                           # Initial background pixel intensity
+        scalar_foreground   = 100               ,                                           # Initial foreground pixel intensity
+        target_value_bg     = 1                ,                                           # target background pixel intensity
+        target_value_fg     = -1               ,                                           # target foreground pixel intensity
+        target_type         = "signed_char"     ,                                           # unsigned_char, signed_char, float
+        )
+
 
 # Image expression in cpp
 
