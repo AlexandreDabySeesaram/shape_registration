@@ -8,12 +8,12 @@ from shape_derivatives import *
 
 #%% Domain omega generation
 
-circle_center = (0.5, 0.5)                                                                  # Center of the circle
-radius = 0.35                                                                               # Radius of the circle
+circle_center = (0.5, 0.5)                                                                      # Center of the circle
+radius = 0.35                                                                                   # Radius of the circle
 
 import mshr 
-center      = dolfin.Point(circle_center[0], circle_center[1])                              # Center of the disc
-resolution  = 50                                                                            # Resolution of the mesh
+center      = dolfin.Point(circle_center[0], circle_center[1])                                  # Center of the disc
+resolution  = 50                                                                                # Resolution of the mesh
 domain      = mshr.Circle(center, radius)
 mesh_omega  = mshr.generate_mesh(domain, resolution)
 
@@ -33,11 +33,11 @@ image_path      = image_folder+image_name
 print("* Loading the image")
 img_raw         = plt.imread(image_path)
 img             = np.array(img_raw)
-img[img>150]    = 0                                                                         # Remove left lung
-img             = -1*img+50                                                                 # Set inside lung negative and outside positive (should automate depending on max value in image)
+img[img>150]    = 0                                                                             # Remove left lung
+img             = -1*img+50                                                                     # Set inside lung negative and outside positive (should automate depending on max value in image)
 
 (Nx, Ny) = img.shape
-mesh = dolfin.UnitSquareMesh(Nx, Ny, "crossed")                                             # Create a mesh at the image dimensions
+mesh = dolfin.UnitSquareMesh(Nx, Ny, "crossed")                                                 # Create a mesh at the image dimensions
 
 
 class FE_image_self(dolfin.UserExpression):
