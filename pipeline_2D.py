@@ -8,15 +8,38 @@ from shape_derivatives import *
 
 
 
+#%% Domain omega generation
+
+circle_center = (0.5, 0.5)                                                                  # Center of the circle
+radius = 0.35                                                                               # Radius of the circle
+
+import mshr 
+center      = dolfin.Point(circle_center[0], circle_center[1])                              # Center of the disc
+resolution  = 50                                                                            # Resolution of the mesh
+domain      = mshr.Circle(center, radius)
+mesh_omega  = mshr.generate_mesh(domain, resolution)
+
+
+
 #%% Load image
+
+
+result_folder   = "Results/" 
+filebasename    = result_folder+"mapping_lung_2D_interpol"
+image_name      = "lung_blurred.pgm" 
+image_folder    = "Images/"
+image_path      = image_folder+image_name
+
+
+
 print("* Loading the image")
-img_raw = plt.imread("lung_blurred.pgm")
-img = np.array(img_raw)
-img[img>150] = 0                                                                                # Remove left lung
-img = -1*img+50                                                                                 # Set inside lung negative and outside positive
+img_raw         = plt.imread(image_path)
+img             = np.array(img_raw)
+img[img>150]    = 0                                                                         # Remove left lung
+img             = -1*img+50                                                                 # Set inside lung negative and outside positive (should automate depending on max value in image)
 
 (Nx, Ny) = img.shape
-mesh = dolfin.UnitSquareMesh(Nx, Ny, "crossed")                                                        # Create a mesh at the image dimensions
+mesh = dolfin.UnitSquareMesh(Nx, Ny, "crossed")                                             # Create a mesh at the image dimensions
 
 
 class FE_image_self(dolfin.UserExpression):
@@ -31,10 +54,7 @@ class FE_image_self(dolfin.UserExpression):
 img_expr = FE_image_self()                                                                      # Get an dolfin expression for the image
 
 V = dolfin.FunctionSpace(mesh, "Lagrange", 1)
-
-image = dolfin.interpolate(img_expr, V)                                                                # Project it onto the image mesh
-
-
+image = dolfin.interpolate(img_expr, V)                                                         # Project it onto the image mesh
 image.set_allow_extrapolation(True)                                                             
 
 
@@ -45,71 +65,70 @@ dmech.write_VTU_file(
     preserve_connectivity = True)
 
 
-#%% Create the domain \omega
-
-circle_center = (0.5, 0.5)                                      # Center of the circle
-radius = 0.35                                                   # Radius of the circle
-
-import mshr 
-center = dolfin.Point(circle_center[0], circle_center[1])              # Center of the disc
-resolution = 50                                                 # Resolution of the mesh
-domain = mshr.Circle(center, radius)
-mesh_omega = mshr.generate_mesh(domain, resolution)
-
-integral_value = int_I(mesh_omega, image)   
-
-print(f"Integral of f over the domain: {integral_value}")
-
-# plot(I(mesh_omega, image))                                      # Plot image projected onto the initial domain
 
 
-# %% Naive gradient descent
 
-# Algorithms parameters
-maxit = 500                                                     # max number of iteration
-step = 0.1                                                      # initial step size
-coeffStep = 1.5                                                 # step increase factor at each iteration ( > 1)
-minStep = 1e-9                                                  # minimum step size (stop criterion)
+#%% Tracking
+
+
+# Solver parameters
+maxit           = 500                                                                           # max number of iteration
+step            = 0.1                                                                           # initial step size
+coeffStep       = 1.5                                                                           # step increase factor at each iteration ( > 1)
+minStep         = 1e-9                                                                          # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha = 10                                                       # dissipation term
-gamma = 1                                                       # preserve mesh quality (arrondis aussi les angles...)
+alpha           = 10                                                                            # weight L1 term of H1 norm
+
 
 # Initialization
 
-
-u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)
-u               = dolfin.Function(u_fs, name="mapping")
-u.vector()[:]   = 0
-dolfin.ALE.move(mesh_omega, u)
+mesh_Omega_0    = dolfin.Mesh(mesh_omega)                                                       # Reference configuration mesh
+u_fs_Omega_0    = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)                             # d-D vector space defined on reference configuration  
+u_Omega_0       = dolfin.Function(u_fs_Omega_0, name="mapping")                                 # Mapping defined on the reference configuration mesh
 
 
-loss_vect = [int_I(mesh_omega, image)]
+u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                               # d-D vector space defined on current configuration                             
+u               = dolfin.Function(u_fs, name="mapping")                                         # Mapping defined on the current configuration mesh
 
-# Optimization loop (gradient descent)
+loss_vect       = [int_I(mesh_omega, image)]                                                    # Store the evolution of the loss function
+
+# Optimization loop ( naive gradient descent)
+
 k = 0
-
-
-filebasename = "mapping_lung_2D_H1_weight_L2_2"
-
-
 dmech.write_VTU_file(
-filebasename = filebasename,
-function = u,
-time = k,
-preserve_connectivity = True)
+    filebasename            = filebasename,
+    function                = u,
+    time                    = k,
+    preserve_connectivity   = True)
 
 while k<maxit and step >= minStep:
     k += 1
-    # shape derivative computation and update gradient
-    shape_gradient = shape_derivative_volume(mesh_omega, u, I(mesh_omega, image), grad_I(mesh_omega, image), alpha = alpha, gamma = gamma)
-    u, loss , step = update_GD(mesh_omega, image, u, -shape_gradient, step = step * coeffStep, minStep = minStep)
+    # shape derivative computation and update
+    shape_gradient = shape_derivative_volume(
+                        mesh        = mesh_omega, 
+                        I           = proj_I(mesh_omega, image), 
+                        grad_I      = grad_I(mesh_omega, image), 
+                        alpha       = alpha)
+
+    u, loss , step = update_GD(
+                        mesh        = mesh_omega, 
+                        image       = image, 
+                        u           = u, 
+                        descentDir  = -shape_gradient, 
+                        step        = step * coeffStep, 
+                        minStep     = minStep)
+
     # Print and store result
-    print(f"it = {k}  |  loss = {loss:.10e}    ", end = "\r")
+    print(f"* iteration = {k}  |  loss = {loss:.10e}    ", end = "\n")
     loss_vect.append(loss)
+
     dmech.write_VTU_file(
-    filebasename = filebasename,
-    function = u,
-    time = k,
-    preserve_connectivity = True)
-# %%
+        filebasename            = filebasename,
+        function                = u,
+        time                    = k,
+        preserve_connectivity   = True)
+
+
+
+
