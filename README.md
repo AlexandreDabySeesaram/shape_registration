@@ -24,7 +24,7 @@ cd dolfin_warp
 pip install -e .
 ``````
 
-### Folder set-up
+### Default folder set-up
 
 
 ```
