@@ -21,9 +21,13 @@ domain          = mshr.Sphere(center, radius)
 mesh_omega      = mshr.generate_mesh(domain, resolution)
 mesh_omega.num_vertices()
 
-#%% Image expression generation
+#%% Load image
 
-image_path = "PA5_Binary_signed_int.vti" 
+result_folder   = "Results/" 
+image_name      = "PA5_Binary_signed_int.vti" 
+image_folder    = "Images/"
+
+image_path      = image_folder+image_name
 
 # Image expression in cpp
 
@@ -44,34 +48,17 @@ Img_3D_expr.init_image(
     filename=image_path)
 
 
-
-#%% Projection
-
-
-# V_fs = dolfin.FunctionSpace(mesh_omega, "CG", 1)
-# i_proj = dolfin.interpolate(Img_3D_expr, V_fs)
-
-# # Img_3D_expr = dolfin.Expression("f - 1", degree=1, f=Img_3D_expr)
-# dmech.write_VTU_file(
-#     filebasename="I_sphere_3",
-#     function=I_3D(mesh_omega, Img_3D_expr),
-#     time=0,
-#     preserve_connectivity=True
-# )
-
-
-
 #%% Tracking
 
 
 # Solver parameters
-maxit       = 500                                                                               # max number of iteration
-step        = 0.01                                                                              # initial step size
-coeffStep   = 1.5                                                                               # step increase factor at each iteration ( > 1)
-minStep     = 1e-9                                                                              # minimum step size (stop criterion)
+maxit           = 500                                                                           # max number of iteration
+step            = 0.01                                                                          # initial step size
+coeffStep       = 1.5                                                                           # step increase factor at each iteration ( > 1)
+minStep         = 1e-9                                                                          # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha = 1e-3                                                                                    # weight L1 term of H1 norm
+alpha           = 1e-3                                                                          # weight L1 term of H1 norm
 
 
 # Initialization
@@ -83,25 +70,6 @@ u_Omega_0       = Function(u_fs_Omega_0, name="mapping")                        
 
 u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                               # d-D vector space defined on current configuration                             
 u               = dolfin.Function(u_fs, name="mapping")                                         # Mapping defined on the current configuration mesh
-
-
-
-### MARTIN DEBUG
-# dV = dolfin.Measure("dx", domain=mesh_Omega_0)
-# F = dolfin.Identity(3) + dolfin.grad(u)
-# J = dolfin.det(F)
-
-# Psi = Img_3D_expr * J
-
-# dolfin.assemble(Psi * dV)
-# u_test          = dolfin.TestFunction(u_fs)
-# dPsi = dolfin.derivative(Psi, u, u_test)
-# dPsi += dolfin.inner(GradImg_3D_expr, u_test) * J
-
-# dolfin.assemble(dPsi * dV) # Replace solving the bilinear problem by choosing L2 inner product then add mech regularisation
-### MARTIN DEBUG
-
-
 
 loss_vect       = [int_I_3D(mesh_omega, Img_3D_expr)]                                           # Store the evolution of the loss function
 
