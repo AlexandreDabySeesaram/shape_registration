@@ -96,7 +96,7 @@ coeffStep               = 1.5                                                   
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha                   = 1e-3                                                              # weight L2 term of H1 norm
+alpha                   = 1e-2                                                              # weight L2 term of H1 norm
 
 
 # Initialization
