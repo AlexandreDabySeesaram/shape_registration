@@ -29,7 +29,6 @@ image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
 filebasename    = result_folder+"mapping_lung_3D"
-# image_name      = "PA5_Binary_signed_int.vti" 
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
@@ -79,7 +78,7 @@ coeffStep       = 1.5                                                           
 minStep         = 1e-9                                                                      # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha           = 1e-3                                                                      # weight L1 term of H1 norm
+alpha           = 1e-3                                                                      # weight L2 term of H1 norm
 
 
 # Initialization
