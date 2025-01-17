@@ -98,26 +98,26 @@ loss_vect       = [int_I(mesh_omega, Img_3D_expr)]                              
 
 k = 0
 dmech.write_VTU_file(
-    filebasename            = filebasename,
-    function                = u,
-    time                    = k,
+    filebasename            = filebasename  ,
+    function                = u             ,
+    time                    = k             ,
     preserve_connectivity   = True)
 
 while k<maxit and step >= minStep:
     k += 1
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(
-                        mesh        = mesh_omega, 
-                        I           = proj_I(mesh_omega, Img_3D_expr), 
-                        grad_I      = grad_I(mesh_omega, Img_3D_expr), 
+                        mesh        = mesh_omega                        , 
+                        I           = proj_I(mesh_omega, Img_3D_expr)   , 
+                        grad_I      = grad_I(mesh_omega, Img_3D_expr)   , 
                         alpha       = alpha)
 
     u, loss , step = update_GD(
-                        mesh        = mesh_omega, 
-                        image       = Img_3D_expr, 
-                        u           = u, 
-                        descentDir  = -shape_gradient, 
-                        step        = step * coeffStep, 
+                        mesh        = mesh_omega                        , 
+                        image       = Img_3D_expr                       , 
+                        u           = u                                 , 
+                        descentDir  = -shape_gradient                   , 
+                        step        = step * coeffStep                  , 
                         minStep     = minStep)
 
     # Print and store result
@@ -125,9 +125,9 @@ while k<maxit and step >= minStep:
     loss_vect.append(loss)
 
     dmech.write_VTU_file(
-        filebasename            = filebasename,
-        function                = u,
-        time                    = k,
+        filebasename            = filebasename  ,
+        function                = u             ,
+        time                    = k             ,
         preserve_connectivity   = True)
 
 

@@ -57,9 +57,9 @@ image.set_allow_extrapolation(True)
 
 
 dmech.write_VTU_file(
-    filebasename = image_folder+"image_lung_2D",
-    function = image,
-    time = 0,
+    filebasename = image_folder+"image_lung_2D" ,
+    function = image                            ,
+    time = 0                                    ,
     preserve_connectivity = True)
 
 
@@ -95,26 +95,26 @@ loss_vect       = [int_I(mesh_omega, image)]                                    
 
 k = 0
 dmech.write_VTU_file(
-    filebasename            = filebasename,
-    function                = u,
-    time                    = k,
+    filebasename            = filebasename  ,
+    function                = u             ,
+    time                    = k             ,
     preserve_connectivity   = True)
 
 while k<maxit and step >= minStep:
     k += 1
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(
-                        mesh        = mesh_omega, 
-                        I           = proj_I(mesh_omega, image), 
-                        grad_I      = grad_I(mesh_omega, image), 
+                        mesh        = mesh_omega                    , 
+                        I           = proj_I(mesh_omega, image)     , 
+                        grad_I      = grad_I(mesh_omega, image)     , 
                         alpha       = alpha)
 
     u, loss , step = update_GD(
-                        mesh        = mesh_omega, 
-                        image       = image, 
-                        u           = u, 
-                        descentDir  = -shape_gradient, 
-                        step        = step * coeffStep, 
+                        mesh        = mesh_omega                    , 
+                        image       = image                         , 
+                        u           = u                             , 
+                        descentDir  = -shape_gradient               , 
+                        step        = step * coeffStep              , 
                         minStep     = minStep)
 
     # Print and store result
@@ -122,9 +122,9 @@ while k<maxit and step >= minStep:
     loss_vect.append(loss)
 
     dmech.write_VTU_file(
-        filebasename            = filebasename,
-        function                = u,
-        time                    = k,
+        filebasename            = filebasename  ,
+        function                = u             ,
+        time                    = k             ,
         preserve_connectivity   = True)
 
 
