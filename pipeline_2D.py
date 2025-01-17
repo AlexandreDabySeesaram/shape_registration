@@ -28,7 +28,15 @@ image_name      = "lung_blurred.pgm"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
 
+# Checks folders existence
+import os 
+if not os.path.isdir(image_folder):
+    os.system("mkdir "+image_folder)
+    print("folder "+image_folder+" created")
 
+if not os.path.isdir(result_folder):
+    os.system("mkdir "+result_folder)
+    print("folder "+result_folder+" created")
 
 print("* Loading the image")
 img_raw         = plt.imread(image_path)

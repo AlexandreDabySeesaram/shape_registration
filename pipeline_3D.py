@@ -25,13 +25,27 @@ mesh_omega.num_vertices()
 
 #%% Load image
 
+mesh_folder     = "Meshes"
+mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
 filebasename    = result_folder+"mapping_lung_3D"
+mappingname     = result_folder+"mapping_lung_3D_Omega_0"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
+
+
+# Checks folders existence
+import os 
+if not os.path.isdir(image_folder):
+    os.system("mkdir "+image_folder)
+    print("folder "+image_folder+" created")
+
+if not os.path.isdir(result_folder):
+    os.system("mkdir "+result_folder)
+    print("folder "+result_folder+" created")
 
 # Check if signed image exist
 image_file = glob.glob(image_path)
@@ -70,28 +84,33 @@ Img_3D_expr.init_image(
 
 #%% Tracking
 
+# Output settings
+write_deformed_mesh     = True                                                              # Boolean export deformed mesh
+print_iterations        = True                                                              # Boolean print gradient descent iterations
+write_mapping           = True                                                              # Boolean mapping on initial mesh
 
 # Solver parameters
-maxit           = 500                                                                       # max number of iteration
-step            = 0.01                                                                      # initial step size
-coeffStep       = 1.5                                                                       # step increase factor at each iteration ( > 1)
-minStep         = 1e-9                                                                      # minimum step size (stop criterion)
+maxit                   = 500                                                               # max number of iteration
+step                    = 0.01                                                              # initial step size
+coeffStep               = 1.5                                                               # step increase factor at each iteration ( > 1)
+minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha           = 1e-3                                                                      # weight L2 term of H1 norm
+alpha                   = 1e-3                                                              # weight L2 term of H1 norm
 
 
 # Initialization
 
-mesh_Omega_0    = dolfin.Mesh(mesh_omega)                                                   # Reference configuration mesh
-u_fs_Omega_0    = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)                         # d-D vector space defined on reference configuration  
-u_Omega_0       = dolfin.Function(u_fs_Omega_0, name="mapping")                             # Mapping defined on the reference configuration mesh
+if write_mapping:
+    mesh_Omega_0            = dolfin.Mesh(mesh_omega)                                       # Reference configuration mesh
+    u_fs_Omega_0            = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)             # d-D vector space defined on reference configuration  
+    u_Omega_0               = dolfin.Function(u_fs_Omega_0, name="mapping")                 # Mapping defined on the reference configuration mesh
 
 
-u_fs            = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                           # d-D vector space defined on current configuration                             
-u               = dolfin.Function(u_fs, name="mapping")                                     # Mapping defined on the current configuration mesh
+u_fs                    = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                   # d-D vector space defined on current configuration                             
+u                       = dolfin.Function(u_fs, name="mapping")                             # Mapping defined on the current configuration mesh
 
-loss_vect       = [int_I(mesh_omega, Img_3D_expr)]                                          # Store the evolution of the loss function
+loss_vect               = [int_I(mesh_omega, Img_3D_expr)]                                  # Store the evolution of the loss function
 
 # Optimization loop ( naive gradient descent)
 
@@ -122,14 +141,27 @@ while k<maxit and step >= minStep:
     # Print and store result
     print(f"* iteration = {k}  |  loss = {loss:.10e}    ", end = "\n")
     loss_vect.append(loss)
+    if print_iterations:
+        dmech.write_VTU_file(
+            filebasename            = filebasename  ,
+            function                = u             ,
+            time                    = k             ,
+            preserve_connectivity   = True)
 
+
+if write_deformed_mesh:
+    if not os.path.isdir(mesh_folder):
+        os.system("mkdir "+mesh_folder)
+        print("folder "+mesh_folder+" created")
+    dolfin.File(mesh_folder+"/"+mesh_name+".xml") << mesh_omega
+
+if write_mapping:
+    u_Omega_0.vector()[:]           = u.vector()[:]
     dmech.write_VTU_file(
-        filebasename            = filebasename  ,
-        function                = u             ,
-        time                    = k             ,
-        preserve_connectivity   = True)
-
-
+            filebasename            = mappingname   ,
+            function                = u_Omega_0     ,
+            time                    = 0             ,
+            preserve_connectivity   = True)
 
 
 
