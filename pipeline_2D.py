@@ -23,7 +23,7 @@ mesh_omega  = mshr.generate_mesh(domain, resolution)
 
 
 result_folder   = "Results/" 
-filebasename    = result_folder+"mapping_lung_2D_interpol"
+filebasename    = result_folder+"mapping_lung_2D_eps"
 image_name      = "lung_blurred.pgm" 
 image_folder    = "Images/"
 image_path      = image_folder+image_name

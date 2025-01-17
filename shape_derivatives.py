@@ -53,7 +53,8 @@ def shape_derivative_volume(mesh, I, grad_I, alpha=1):
     u, v                = dolfin.TestFunction(V), dolfin.TrialFunction(V)    
     shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
     # Regularization term (choice of inner_product)
-    inner_product       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v)) * dolfin.dx + alpha * dolfin.inner(u, v) * dolfin.dx
+    # inner_product       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v)) * dolfin.dx + alpha * dolfin.inner(u, v) * dolfin.dx
+    inner_product       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v) + dolfin.grad(v).T) * dolfin.dx + alpha * dolfin.inner(u, v) * dolfin.dx
 
     # Solve the system to find shape_gradient
     shape_gradient      = dolfin.Function(V)
