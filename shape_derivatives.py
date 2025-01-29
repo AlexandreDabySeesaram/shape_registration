@@ -50,7 +50,8 @@ def int_I(
 
 def shape_derivative_volume(mesh, I, grad_I, alpha=1):
     V                   = dolfin.VectorFunctionSpace(mesh, "CG", 1)
-    u, v                = dolfin.TestFunction(V), dolfin.TrialFunction(V)    
+    # u, v                = dolfin.TestFunction(V), dolfin.TrialFunction(V)    
+    u, v                = dolfin.TrialFunction(V), dolfin.TestFunction(V) 
     shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
     # Regularization term (choice of inner_product)
     # inner_product       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v)) * dolfin.dx + alpha * dolfin.inner(u, v) * dolfin.dx
@@ -92,7 +93,7 @@ def update_GD(mesh, image, u, descentDir, step=1, minStep=1e-6):
     # Compute the functional int_I at the current mesh state
     old_int_I   = int_I(mesh, image)
     new_int_I   = old_int_I + 1  
-
+    k = 1
     # Start Armijo backtracking with an initial step size
     step = step * 2
     while new_int_I > old_int_I:
@@ -118,5 +119,6 @@ def update_GD(mesh, image, u, descentDir, step=1, minStep=1e-6):
         if step <= minStep:
             print(f"Backtracking failed, step <= {minStep}")
             break
-    
+        print(f"    relaxation iteration: {k}")
+        k+=1
     return new_u, new_int_I, step

@@ -14,7 +14,7 @@ import glob
 
 sphere_center   = (120, 120, 120)                                                           # Center of the sphere
 sphere_radius   = 75                                                                        # Radius of the sphere
-resolution      = 30                                                                        # Resolution of the mesh
+resolution      = 10                                                                        # Resolution of the mesh
 
 # Create a 3D spherical domain
 center          = dolfin.Point(sphere_center[0], sphere_center[1], sphere_center[2])        # Center of the disc
@@ -30,8 +30,8 @@ mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"mapping_lung_3D_eps"
-mappingname     = result_folder+"mapping_lung_3D_Omega_0_eps"
+filebasename    = result_folder+"mapping_lung_3D_coarse"
+mappingname     = result_folder+"mapping_lung_3D_coarse"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
@@ -121,6 +121,9 @@ dmech.write_VTU_file(
     time                    = k             ,
     preserve_connectivity   = True)
 
+import time
+t_start = time.time()
+
 while k<maxit and step >= minStep:
     k += 1
     # shape derivative computation and update
@@ -139,7 +142,7 @@ while k<maxit and step >= minStep:
                         minStep     = minStep)
 
     # Print and store result
-    print(f"* iteration = {k}  |  loss = {loss:.10e}    ", end = "\n")
+    print(f"* iteration = {k}  |  loss = {loss:.10e}    |  step = {step:.4e}    ", end = "\n")
     loss_vect.append(loss)
     if print_iterations:
         dmech.write_VTU_file(
@@ -164,4 +167,6 @@ if write_mapping:
             preserve_connectivity   = True)
 
 
+t_stop = time.time()
 
+print(f"* Duration (s) = {(t_stop-t_start):.4e}")
