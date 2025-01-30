@@ -92,7 +92,7 @@ write_mapping           = True                                                  
 # Solver parameters
 maxit                   = 500                                                               # max number of iteration
 step                    = 0.01                                                              # initial step size
-coeffStep               = 1.5                                                               # step increase factor at each iteration ( > 1)
+coeffStep               = 2                                                               # step increase factor at each iteration ( > 1)
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
