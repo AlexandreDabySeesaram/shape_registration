@@ -14,7 +14,7 @@ import glob
 
 sphere_center   = (120, 120, 120)                                                           # Center of the sphere
 sphere_radius   = 75                                                                        # Radius of the sphere
-resolution      = 10                                                                        # Resolution of the mesh
+resolution      = 30                                                                        # Resolution of the mesh
 
 # Create a 3D spherical domain
 center          = dolfin.Point(sphere_center[0], sphere_center[1], sphere_center[2])        # Center of the disc
@@ -37,7 +37,7 @@ mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"test_pull-back_euler_image_noGrad_assembled"
+filebasename    = result_folder+"solution_back_to_normal"
 mappingname     = result_folder+"Compare_pulled-back_mapping"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
@@ -102,13 +102,13 @@ print_iterations        = True                                                  
 write_mapping           = True                                                              # Boolean mapping on initial mesh
 
 # Solver parameters
-maxit                   = 15                                                               # max number of iteration
-step                    = 1                                                         # initial step size
-coeffStep               = 2                                                               # step increase factor at each iteration ( > 1)
+maxit                   = 150                                                               # max number of iteration
+step                    = 1e-2                                                         # initial step size
+coeffStep               = 1.5                                                               # step increase factor at each iteration ( > 1)
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha                   = 1e-3                                                              # weight L2 term of H1 norm
+alpha                   = 1e-2                                                              # weight L2 term of H1 norm
 
 
 # Initialization
@@ -152,23 +152,6 @@ while k<maxit and step >= minStep:
                         I           = Img_3D_expr                       , # No projection
                         grad_I      = grad_I(mesh_omega, Img_3D_expr)   , 
                         alpha       = alpha)
-
-    ##DEBUG save intermediate numpy arrays
-    # res_numpy = shape_gradient
-    # print(res_numpy.shape)
-    # import os
-    # file_res = "res_euler.dat"
-    # if os.path.exists(file_res):
-    #     res_data = np.loadtxt(file_res)
-    #     if res_data.ndim == 1:  # If file has only one row, reshape to column
-    #         res_data = res_data[:, np.newaxis]
-    #     updated_res_data = np.column_stack((res_data, res_numpy))
-    # else:
-    #     updated_res_data = res_numpy[:, np.newaxis]  
-    # np.savetxt(file_res, updated_res_data, fmt="%.6f")
-
-
-
 
 
     u, loss , step = update_GD(
@@ -214,24 +197,3 @@ if write_mapping:
 t_stop = time.time()
 
 print(f"* Duration (s) = {(t_stop-t_start):.4e}")
-
-
-
-# I = dolfin.Identity(3)
-# F = I + dolfin.grad(u_Omega_0)
-# J = dolfin.det(F)
-# Q = dolfin.TensorFunctionSpace(mesh_Omega_0, "DG", 0)
-# F_proj = dolfin.project(F, Q)
-# F_proj.vector()[:]
-
-
-# I = dolfin.Identity(3)
-# F = I + dolfin.grad(u_Omega_0)
-# J = dolfin.det(F)
-# Q_2 = dolfin.FunctionSpace(mesh_Omega_0, "DG", 0)
-# F_proj_2 = dolfin.project(J, Q_2)
-# F_proj_2.vector()[:]
-
-# fs = dolfin.FunctionSpace(mesh_Omega_0, "DG", 0)
-# f = dolfin.Function(fs)
-# dolfin.assemble(dolfin.Constant(1) * dolfin.TestFunction(fs) * dolfin.dx(mesh_Omega_0), vec=f.vector())
