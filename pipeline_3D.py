@@ -23,6 +23,13 @@ domain          = mshr.Sphere(center, radius)
 mesh_omega      = mshr.generate_mesh(domain, resolution)
 mesh_omega.num_vertices()
 
+
+#%% load previous lung mesh
+
+
+# mesh_omega=dolfin.Mesh("Meshes/mesh_RL.xml")
+
+
 #%% Load image
 
 mesh_folder     = "Meshes"
@@ -30,8 +37,8 @@ mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"mapping_lung_3D_coarse"
-mappingname     = result_folder+"mapping_lung_3D_coarse"
+filebasename    = result_folder+"test_pull-back_euler_image_noGrad_assembled"
+mappingname     = result_folder+"Compare_pulled-back_mapping"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
 image_path      = image_folder+image_name
@@ -81,22 +88,27 @@ Img_3D_expr = dolfin.CompiledExpression(
 Img_3D_expr.init_image(
     filename=image_path)
 
+dV = dolfin.Measure(
+        "dx",
+        domain=mesh_omega)
+print(f"integral of I after reading image {dolfin.assemble(Img_3D_expr*dV)}")#DEBUG
+
 
 #%% Tracking
 
 # Output settings
-write_deformed_mesh     = True                                                              # Boolean export deformed mesh
+write_deformed_mesh     = False                                                              # Boolean export deformed mesh
 print_iterations        = True                                                              # Boolean print gradient descent iterations
 write_mapping           = True                                                              # Boolean mapping on initial mesh
 
 # Solver parameters
-maxit                   = 500                                                               # max number of iteration
-step                    = 0.01                                                              # initial step size
+maxit                   = 15                                                               # max number of iteration
+step                    = 1                                                         # initial step size
 coeffStep               = 2                                                               # step increase factor at each iteration ( > 1)
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha                   = 1e-2                                                              # weight L2 term of H1 norm
+alpha                   = 1e-3                                                              # weight L2 term of H1 norm
 
 
 # Initialization
@@ -106,6 +118,13 @@ if write_mapping:
     u_fs_Omega_0            = dolfin.VectorFunctionSpace(mesh_Omega_0, "CG", 1)             # d-D vector space defined on reference configuration  
     u_Omega_0               = dolfin.Function(u_fs_Omega_0, name="mapping")                 # Mapping defined on the reference configuration mesh
 
+    #DEBUG
+    I = dolfin.Identity(3)
+    F = I + dolfin.grad(u_Omega_0)
+    J = dolfin.det(F)
+    Q_2 = dolfin.FunctionSpace(mesh_Omega_0, "DG", 0)
+
+    #DEBUG END
 
 u_fs                    = dolfin.VectorFunctionSpace(mesh_omega, "CG", 1)                   # d-D vector space defined on current configuration                             
 u                       = dolfin.Function(u_fs, name="mapping")                             # Mapping defined on the current configuration mesh
@@ -129,9 +148,28 @@ while k<maxit and step >= minStep:
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(
                         mesh        = mesh_omega                        , 
-                        I           = proj_I(mesh_omega, Img_3D_expr)   , 
+                        # I           = proj_I(mesh_omega, Img_3D_expr)   , 
+                        I           = Img_3D_expr                       , # No projection
                         grad_I      = grad_I(mesh_omega, Img_3D_expr)   , 
                         alpha       = alpha)
+
+    ##DEBUG save intermediate numpy arrays
+    # res_numpy = shape_gradient
+    # print(res_numpy.shape)
+    # import os
+    # file_res = "res_euler.dat"
+    # if os.path.exists(file_res):
+    #     res_data = np.loadtxt(file_res)
+    #     if res_data.ndim == 1:  # If file has only one row, reshape to column
+    #         res_data = res_data[:, np.newaxis]
+    #     updated_res_data = np.column_stack((res_data, res_numpy))
+    # else:
+    #     updated_res_data = res_numpy[:, np.newaxis]  
+    # np.savetxt(file_res, updated_res_data, fmt="%.6f")
+
+
+
+
 
     u, loss , step = update_GD(
                         mesh        = mesh_omega                        , 
@@ -150,6 +188,11 @@ while k<maxit and step >= minStep:
             function                = u             ,
             time                    = k             ,
             preserve_connectivity   = True)
+        
+    # print jacobian
+    u_Omega_0.vector()[:]           = u.vector()[:]
+    F_proj_2 = dolfin.project(J, Q_2)
+    print(f"min jacobian is {min(F_proj_2.vector()[:])}")
 
 
 if write_deformed_mesh:
@@ -165,8 +208,30 @@ if write_mapping:
             function                = u_Omega_0     ,
             time                    = 0             ,
             preserve_connectivity   = True)
+    print("Done writing ref mapping")
 
 
 t_stop = time.time()
 
 print(f"* Duration (s) = {(t_stop-t_start):.4e}")
+
+
+
+# I = dolfin.Identity(3)
+# F = I + dolfin.grad(u_Omega_0)
+# J = dolfin.det(F)
+# Q = dolfin.TensorFunctionSpace(mesh_Omega_0, "DG", 0)
+# F_proj = dolfin.project(F, Q)
+# F_proj.vector()[:]
+
+
+# I = dolfin.Identity(3)
+# F = I + dolfin.grad(u_Omega_0)
+# J = dolfin.det(F)
+# Q_2 = dolfin.FunctionSpace(mesh_Omega_0, "DG", 0)
+# F_proj_2 = dolfin.project(J, Q_2)
+# F_proj_2.vector()[:]
+
+# fs = dolfin.FunctionSpace(mesh_Omega_0, "DG", 0)
+# f = dolfin.Function(fs)
+# dolfin.assemble(dolfin.Constant(1) * dolfin.TestFunction(fs) * dolfin.dx(mesh_Omega_0), vec=f.vector())

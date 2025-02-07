@@ -51,16 +51,89 @@ def int_I(
 def shape_derivative_volume(mesh, I, grad_I, alpha=1):
     V                   = dolfin.VectorFunctionSpace(mesh, "CG", 1)
     u, v                = dolfin.TrialFunction(V), dolfin.TestFunction(V) 
-    shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
+    # shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
+    # shape_derivative    = dolfin.div(v) * dolfin.dx #DEBUG False, for comparison
+    shape_derivative    = dolfin.div(v) * I * dolfin.dx #DEBUG False, for comparison with image
+    
+    
+    dV = dolfin.Measure(
+            "dx",
+            domain=mesh)
+    print(dolfin.assemble(I*dV))#DEBUG
     # Regularization term (choice of inner_product)
-    inner_product       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v) + dolfin.grad(v).T) * dolfin.dx + alpha * dolfin.inner(u, v) * dolfin.dx
+    inner_product_1       = dolfin.inner(dolfin.grad(u) + dolfin.grad(u).T, dolfin.grad(v) + dolfin.grad(v).T) * dolfin.dx 
+    inner_product_2       = alpha * dolfin.inner(u, v) * dolfin.dx
+    inner_product         = inner_product_1 + inner_product_2
+# #DEBUG
+#     form_bi_numpy = dolfin.assemble(inner_product).array()[:,:]
+#     print(form_bi_numpy.shape)
+#     import os
+#     file_form_bi = "form_bi_euler"
+#     if os.path.exists(file_form_bi+".npy"):
+#         form_bi_data = np.load(file_form_bi+".npy")
+#         if form_bi_data.ndim == 2:  # If file has only matrix, reshape to tensor
+#             form_bi_data = form_bi_data[:, :,np.newaxis]
+#         print(f"form_bi_data {form_bi_data.shape}, form_bi_numpy {form_bi_numpy.shape}")
+#         updated_form_bi_data = np.concatenate((form_bi_data, form_bi_numpy[:, :,np.newaxis]), axis = 2)
+#     else:
+#         updated_form_bi_data = form_bi_numpy[:, :, np.newaxis]  
+#     np.save(file_form_bi, updated_form_bi_data)
+
+#     form_bi_numpy_2 = dolfin.assemble(inner_product_2).array()[:,:]
+#     print(form_bi_numpy_2.shape)
+#     import os
+#     file_form_bi_2 = "form_bi_euler_2"
+#     if os.path.exists(file_form_bi_2+".npy"):
+#         form_bi_data_2 = np.load(file_form_bi_2+".npy")
+#         if form_bi_data_2.ndim == 2:  # If file has only matrix, reshape to tensor
+#             form_bi_data_2 = form_bi_data_2[:, :,np.newaxis]
+#         print(f"form_bi_data {form_bi_data_2.shape}, form_bi_numpy {form_bi_numpy_2.shape}")
+#         updated_form_bi_data_2 = np.concatenate((form_bi_data_2, form_bi_numpy_2[:, :,np.newaxis]), axis = 2)
+#     else:
+#         updated_form_bi_data_2 = form_bi_numpy_2[:, :, np.newaxis]  
+#     np.save(file_form_bi_2, updated_form_bi_data_2)
+
+#     form_bi_numpy_1 = dolfin.assemble(inner_product_1).array()[:,:]
+#     print(form_bi_numpy_1.shape)
+#     import os
+#     file_form_bi_1 = "form_bi_euler_1"
+#     if os.path.exists(file_form_bi_1+".npy"):
+#         form_bi_data_1 = np.load(file_form_bi_1+".npy")
+#         if form_bi_data_1.ndim == 2:  # If file has only matrix, reshape to tensor
+#             form_bi_data_1 = form_bi_data_1[:, :,np.newaxis]
+#         print(f"form_bi_data {form_bi_data_1.shape}, form_bi_numpy {form_bi_numpy_1.shape}")
+#         updated_form_bi_data_1 = np.concatenate((form_bi_data_1, form_bi_numpy_1[:, :,np.newaxis]), axis = 2)
+#     else:
+#         updated_form_bi_data_1 = form_bi_numpy_1[:, :, np.newaxis]  
+#     np.save(file_form_bi_1, updated_form_bi_data_1)
+
+#     form_numpy = dolfin.assemble(shape_derivative)[:]
+#     print(form_numpy.shape)
+#     import os
+#     file_form = "form_euler"
+#     if os.path.exists(file_form+".npy"):
+#         form_data = np.load(file_form+".npy")
+#         if form_data.ndim == 1:  #If file has only one row, reshape to column
+#             form_data = form_data[:, np.newaxis]
+#         updated_form_data = np.column_stack((form_data, form_numpy))
+#     else:
+#         updated_form_data = form_numpy[:, np.newaxis]  
+#     np.save(file_form, updated_form_data)
+#     #DEBUG END
 
     # Solve the system to find shape_gradient
     shape_gradient      = dolfin.Function(V)
-    dolfin.solve(inner_product == shape_derivative, shape_gradient)
+    # dolfin.solve(inner_product == shape_derivative, shape_gradient)
+
+
+    inner_assembled = dolfin.assemble(inner_product)
+    rhs_assembled = dolfin.assemble(shape_derivative)
+
+    dolfin.solve(inner_assembled,shape_gradient.vector(),rhs_assembled)
+
     return shape_gradient.vector()[:]
 
-
+ 
 
 
 def check_flipped_triangles(mesh):
@@ -94,9 +167,10 @@ def update_GD(mesh, image, u, descentDir, step=1, minStep=1e-6):
     k = 1
     # Start Armijo backtracking with an initial step size
     step = step * 2
-    while new_int_I > old_int_I:
+    # while new_int_I > old_int_I:
+    for i in range(1):
         step = step / 2  
-
+        step = 1#DEBUG comparison
         # If backtracking required (new loop), revert changes to the mesh before trying a new step
         delta_u.vector()[:] = -delta_u.vector()[:]
         dolfin.ALE.move(mesh, (delta_u))                           
