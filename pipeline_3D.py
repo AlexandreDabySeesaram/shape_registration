@@ -37,7 +37,7 @@ mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"BackToNormal"
+filebasename    = result_folder+"Euler_back2normal_new_int"
 mappingname     = result_folder+"Compare_pulled-back_mapping"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
@@ -109,7 +109,7 @@ print_iterations        = True                                                  
 write_mapping           = True                                                              # Boolean mapping on initial mesh
 
 # Solver parameters
-maxit                   = 150                                                               # max number of iteration
+maxit                   = 15                                                               # max number of iteration
 step                    = 1e-2                                                         # initial step size
 coeffStep               = 1.5                                                               # step increase factor at each iteration ( > 1)
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
@@ -160,9 +160,9 @@ while k<maxit and step >= minStep:
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(
                         mesh        = mesh_omega                        , 
-                        I           = proj_I(mesh_omega, Img_3D_expr)   , 
+                        # I           = proj_I(mesh_omega, Img_3D_expr)   , 
                         grad_I      = grad_I(mesh_omega, Img_3D_expr)   , 
-                        # I           = Img_3D_expr                       , # No projection
+                        I           = Img_3D_expr                       , # No projection
                         # grad_I      = Gradi_Img_3D_expr                 , # No projection
                         alpha       = alpha)
 

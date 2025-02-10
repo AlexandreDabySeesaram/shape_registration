@@ -43,8 +43,15 @@ def int_I(
     returns the integral of the projection of image_expression onto mesh
     """
     i_proj = proj_I(mesh, image_expression)
+
+    dV = dolfin.Measure(
+            "dx",
+            domain=mesh)
+    # print(f"using expression integral is:{dolfin.assemble(image_expression*dV)}")#DEBUG
+    # print(f"using projection integral is:{dolfin.assemble(i_proj*dV)}")#DEBUG
     
-    return dolfin.assemble(i_proj * dolfin.dx)
+    return dolfin.assemble(image_expression*dV)
+    # return dolfin.assemble(i_proj * dolfin.dx)
 
 
 
@@ -132,7 +139,7 @@ def update_GD(mesh, image, u, descentDir, step=1, minStep=1e-6):
             continue  
         
         new_int_I = int_I(mesh, image)
-        
+        print(f"*** old int I : {old_int_I:.4e}, new int I {new_int_I:.4e}, relax {step:.4e}")
         if step <= minStep:
             print(f"Backtracking failed, step <= {minStep}")
             break
