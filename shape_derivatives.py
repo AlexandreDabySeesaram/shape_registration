@@ -58,9 +58,9 @@ def int_I(
 def shape_derivative_volume(mesh, I, grad_I, alpha=1):
     V                   = dolfin.VectorFunctionSpace(mesh, "CG", 1)
     u, v                = dolfin.TrialFunction(V), dolfin.TestFunction(V) 
-    # shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
+    shape_derivative    = dolfin.div(v) * I * dolfin.dx + dolfin.inner(grad_I, v) * dolfin.dx
     # shape_derivative    = dolfin.div(v) * dolfin.dx #DEBUG False, for comparison
-    shape_derivative    = dolfin.div(v) * I * dolfin.dx #DEBUG False, for comparison with image
+    # shape_derivative    = dolfin.div(v) * I * dolfin.dx #DEBUG False, for comparison with image
     
     
     dV = dolfin.Measure(
