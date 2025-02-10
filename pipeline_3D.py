@@ -37,7 +37,7 @@ mesh_name       = "3D_lung_PA5"
 image_basename  = "PA5_Binary"
 image_suffix    = "signed_int"
 result_folder   = "Results/" 
-filebasename    = result_folder+"solution_back_to_normal"
+filebasename    = result_folder+"BackToNormal"
 mappingname     = result_folder+"Compare_pulled-back_mapping"
 image_name      = image_basename+"_"+image_suffix+".vti"
 image_folder    = "Images/"
@@ -88,10 +88,17 @@ Img_3D_expr = dolfin.CompiledExpression(
 Img_3D_expr.init_image(
     filename=image_path)
 
-dV = dolfin.Measure(
-        "dx",
-        domain=mesh_omega)
-print(f"integral of I after reading image {dolfin.assemble(Img_3D_expr*dV)}")#DEBUG
+name, cpp = dwarp.get_ExprIm_cpp_pybind(
+    im_dim=3,
+    im_type="grad",
+    verbose=0)
+module = dolfin.compile_cpp_code(cpp)
+expr = getattr(module, name)
+Gradi_Img_3D_expr = dolfin.CompiledExpression(
+    expr(),
+    element=fe)
+Gradi_Img_3D_expr.init_image(
+    filename=image_path)
 
 
 #%% Tracking
@@ -108,7 +115,7 @@ coeffStep               = 1.5                                                   
 minStep                 = 1e-9                                                              # minimum step size (stop criterion)
 
 # Shape derivative parameters
-alpha                   = 1e-2                                                              # weight L2 term of H1 norm
+alpha                   = 1e-3                                                              # weight L2 term of H1 norm
 
 
 # Initialization
@@ -133,6 +140,11 @@ loss_vect               = [int_I(mesh_omega, Img_3D_expr)]                      
 
 # Optimization loop ( naive gradient descent)
 
+# Start by deleting all previous solution with same name
+import os
+os.system(f"rm {filebasename}*")
+
+
 k = 0
 dmech.write_VTU_file(
     filebasename            = filebasename  ,
@@ -148,9 +160,10 @@ while k<maxit and step >= minStep:
     # shape derivative computation and update
     shape_gradient = shape_derivative_volume(
                         mesh        = mesh_omega                        , 
-                        # I           = proj_I(mesh_omega, Img_3D_expr)   , 
-                        I           = Img_3D_expr                       , # No projection
+                        I           = proj_I(mesh_omega, Img_3D_expr)   , 
                         grad_I      = grad_I(mesh_omega, Img_3D_expr)   , 
+                        # I           = Img_3D_expr                       , # No projection
+                        # grad_I      = Gradi_Img_3D_expr                 , # No projection
                         alpha       = alpha)
 
 
